@@ -6,7 +6,7 @@ import { MusicPlayer } from "@/components/layout/MusicPlayer";
 import { PlaylistCard } from "@/components/playlist/PlaylistCard";
 import { AddTrackModal } from "@/components/playlist/AddTrackModal";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Music } from "lucide-react";
 import { mockPlaylists } from "@/lib/playerUtils";
 
 const Dashboard = () => {

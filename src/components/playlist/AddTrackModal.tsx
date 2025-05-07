@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Youtube, Spotify } from "lucide-react";
+import { Youtube, Music } from "lucide-react";
 import { toast } from "sonner";
 
 interface AddTrackModalProps {
@@ -64,7 +64,7 @@ export function AddTrackModal({ open, onOpenChange, onAddTrack, playlistId }: Ad
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
             <Youtube className="h-5 w-5 text-red-500" />
-            <Spotify className="h-5 w-5 text-green-500" />
+            <Music className="h-5 w-5 text-green-500" />
             <Input
               placeholder="Cole o link do YouTube ou Spotify"
               value={link}
