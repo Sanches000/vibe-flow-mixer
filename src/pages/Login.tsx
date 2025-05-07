@@ -1,0 +1,114 @@
+
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Navbar } from "@/components/layout/Navbar";
+import { toast } from "sonner";
+import { Music } from "lucide-react";
+
+const Login = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Por favor, preencha todos os campos");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // In a real app, this would call an API to authenticate the user
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      
+      toast.success("Login realizado com sucesso!");
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("E-mail ou senha incorretos");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      
+      <main className="container mx-auto px-4 pt-24">
+        <div className="max-w-md mx-auto">
+          <div className="flex flex-col items-center mb-8">
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-vibeMixer-purple to-vibeMixer-magenta p-4 mb-4">
+              <Music className="h-full w-full text-white" />
+            </div>
+            <h1 className="text-2xl font-bold">Entrar no VibeFlow</h1>
+            <p className="text-white/60 text-sm mt-2">
+              Entre para acessar suas playlists
+            </p>
+          </div>
+          
+          <div className="glass-card rounded-2xl p-6 mb-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium">
+                  E-mail
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="bg-black/20 border-white/10 focus-visible:ring-vibeMixer-purple"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="block text-sm font-medium">
+                    Senha
+                  </label>
+                  <Link to="/forgot-password" className="text-xs text-vibeMixer-purple hover:underline">
+                    Esqueceu a senha?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="bg-black/20 border-white/10 focus-visible:ring-vibeMixer-purple"
+                  required
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-vibeMixer-purple hover:bg-vibeMixer-purple/90"
+                disabled={isLoading}
+              >
+                {isLoading ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
+          </div>
+          
+          <p className="text-center text-white/60 text-sm">
+            Não tem uma conta?{" "}
+            <Link to="/register" className="text-vibeMixer-purple hover:underline">
+              Registrar
+            </Link>
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Login;
