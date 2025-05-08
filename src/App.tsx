@@ -19,9 +19,6 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
-// Create a new package to install
-import { create } from "zustand";
-
 const queryClient = new QueryClient();
 
 const App = () => (
