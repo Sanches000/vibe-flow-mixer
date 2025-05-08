@@ -1,15 +1,10 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Edit, Plus } from "lucide-react";
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  source: "youtube" | "spotify";
-}
+import { usePlayerStore } from "@/stores/playerStore";
 
 interface PlaylistCardProps {
   id: string;
@@ -33,12 +28,18 @@ export function PlaylistCard({
   onAddTrack
 }: PlaylistCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    navigate(`/playlist/${id}`);
+  };
   
   return (
     <Card 
-      className="glass-card overflow-hidden relative transition-all duration-300 group hover-scale"
+      className="glass-card overflow-hidden relative transition-all duration-300 group hover-scale cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
     >
       <div className="relative aspect-square overflow-hidden">
         <img 
@@ -58,7 +59,10 @@ export function PlaylistCard({
               variant="default"
               size="icon"
               className="bg-vibeMixer-purple hover:bg-vibeMixer-purple/80 rounded-full h-10 w-10"
-              onClick={() => onPlay && onPlay(id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlay && onPlay(id);
+              }}
             >
               <Play className="h-5 w-5" />
             </Button>
@@ -66,7 +70,10 @@ export function PlaylistCard({
               variant="secondary"
               size="icon"
               className="bg-white/10 hover:bg-white/20 rounded-full h-10 w-10"
-              onClick={() => onEdit && onEdit(id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-playlist/${id}`);
+              }}
             >
               <Edit className="h-5 w-5" />
             </Button>
@@ -74,7 +81,10 @@ export function PlaylistCard({
               variant="secondary"
               size="icon"
               className="bg-white/10 hover:bg-white/20 rounded-full h-10 w-10"
-              onClick={() => onAddTrack && onAddTrack(id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddTrack && onAddTrack(id);
+              }}
             >
               <Plus className="h-5 w-5" />
             </Button>

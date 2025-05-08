@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { MusicPlayer } from "@/components/layout/MusicPlayer";
 import { PlaylistCard } from "@/components/playlist/PlaylistCard";
@@ -8,13 +8,18 @@ import { AddTrackModal } from "@/components/playlist/AddTrackModal";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Music } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPlaylists, addTrackToPlaylist, Playlist } from "@/lib/playlistService";
+import { getPlaylists, addTrackToPlaylist, Playlist, getTracksForPlaylist } from "@/lib/playlistService";
+import { usePlayerStore } from "@/stores/playerStore";
 import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [isAddTrackModalOpen, setIsAddTrackModalOpen] = useState(false);
+  const [trackCounts, setTrackCounts] = useState<Record<string, number>>({});
+  
+  const { setCurrentPlaylist, setCurrentTrack } = usePlayerStore();
   
   // Fetch playlists data using React Query
   const { data: playlists, isLoading, error, refetch } = useQuery({
@@ -23,15 +28,35 @@ const Dashboard = () => {
     enabled: !!user,
   });
   
+  // Fetch track counts for each playlist
+  useEffect(() => {
+    const fetchTrackCounts = async () => {
+      if (!playlists || playlists.length === 0) return;
+      
+      const counts: Record<string, number> = {};
+      
+      for (const playlist of playlists) {
+        const tracks = await getTracksForPlaylist(playlist.id);
+        counts[playlist.id] = tracks.length;
+      }
+      
+      setTrackCounts(counts);
+    };
+    
+    fetchTrackCounts();
+  }, [playlists]);
+  
   // Handle actions
-  const handlePlay = (id: string) => {
-    console.log(`Playing playlist: ${id}`);
-    // In a real app, this would start playing the playlist
+  const handlePlay = async (id: string) => {
+    const tracks = await getTracksForPlaylist(id);
+    if (tracks.length === 0) return;
+    
+    setCurrentPlaylist(tracks);
+    setCurrentTrack(tracks[0]);
   };
   
   const handleEdit = (id: string) => {
-    console.log(`Editing playlist: ${id}`);
-    // In a real app, this would navigate to edit page
+    navigate(`/edit-playlist/${id}`);
   };
   
   const handleAddTrack = (id: string) => {
@@ -69,6 +94,12 @@ const Dashboard = () => {
     
     if (result) {
       refetch(); // Refresh playlists data
+      
+      // Update track counts
+      setTrackCounts(prev => ({
+        ...prev,
+        [selectedPlaylist]: (prev[selectedPlaylist] || 0) + 1
+      }));
     }
   };
   
@@ -103,7 +134,7 @@ const Dashboard = () => {
                 id={playlist.id}
                 title={playlist.title}
                 description={playlist.description || undefined}
-                trackCount={0} // We would need to fetch this from the tracks table
+                trackCount={trackCounts[playlist.id] || 0}
                 coverImage={playlist.cover_image || undefined}
                 onPlay={handlePlay}
                 onEdit={handleEdit}

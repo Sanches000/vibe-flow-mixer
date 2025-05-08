@@ -11,9 +11,16 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ViewPlaylist from "./pages/ViewPlaylist";
+import EditPlaylist from "./pages/EditPlaylist";
+import EditProfile from "./pages/EditProfile";
+import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+
+// Create a new package to install
+import { create } from "zustand";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +37,11 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/welcome" element={
+              <ProtectedRoute>
+                <Welcome />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -38,6 +50,21 @@ const App = () => (
             <Route path="/create-playlist" element={
               <ProtectedRoute>
                 <CreatePlaylist />
+              </ProtectedRoute>
+            } />
+            <Route path="/playlist/:id" element={
+              <ProtectedRoute>
+                <ViewPlaylist />
+              </ProtectedRoute>
+            } />
+            <Route path="/edit-playlist/:id" element={
+              <ProtectedRoute>
+                <EditPlaylist />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <EditProfile />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
