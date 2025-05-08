@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { MusicPlayer } from "@/components/layout/MusicPlayer";
@@ -7,12 +7,21 @@ import { PlaylistCard } from "@/components/playlist/PlaylistCard";
 import { AddTrackModal } from "@/components/playlist/AddTrackModal";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Music } from "lucide-react";
-import { mockPlaylists } from "@/lib/playerUtils";
+import { useAuth } from "@/contexts/AuthContext";
+import { getPlaylists, addTrackToPlaylist, Playlist } from "@/lib/playlistService";
+import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
-  const [playlists, setPlaylists] = useState(mockPlaylists);
+  const { user } = useAuth();
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [isAddTrackModalOpen, setIsAddTrackModalOpen] = useState(false);
+  
+  // Fetch playlists data using React Query
+  const { data: playlists, isLoading, error, refetch } = useQuery({
+    queryKey: ['playlists'],
+    queryFn: getPlaylists,
+    enabled: !!user,
+  });
   
   // Handle actions
   const handlePlay = (id: string) => {
@@ -30,9 +39,37 @@ const Dashboard = () => {
     setIsAddTrackModalOpen(true);
   };
   
-  const handleAddTrackSubmit = (link: string) => {
-    console.log(`Adding track from link: ${link} to playlist: ${selectedPlaylist}`);
-    // In a real app, this would add the track to the playlist
+  const handleAddTrackSubmit = async (link: string) => {
+    if (!selectedPlaylist) return;
+    
+    // Extract info from link
+    // This is a simplified example - in a real app you'd use the YouTube/Spotify APIs
+    let title = "New Track";
+    let artist = null;
+    let source: "youtube" | "spotify" = "youtube";
+    
+    if (link.includes("youtube.com") || link.includes("youtu.be")) {
+      source = "youtube";
+      // Try to extract video title from URL (would require API in real implementation)
+      title = "YouTube Track";
+    } else if (link.includes("spotify.com")) {
+      source = "spotify";
+      // Try to extract track info from URL (would require API in real implementation)
+      title = "Spotify Track";
+      artist = "Unknown Artist";
+    }
+    
+    const result = await addTrackToPlaylist(
+      selectedPlaylist,
+      title,
+      artist,
+      link,
+      source
+    );
+    
+    if (result) {
+      refetch(); // Refresh playlists data
+    }
   };
   
   return (
@@ -50,16 +87,24 @@ const Dashboard = () => {
           </Button>
         </div>
         
-        {playlists.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vibeMixer-purple"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 text-red-500">
+            Erro ao carregar playlists. Por favor, tente novamente.
+          </div>
+        ) : playlists && playlists.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {playlists.map((playlist) => (
               <PlaylistCard
                 key={playlist.id}
                 id={playlist.id}
                 title={playlist.title}
-                description={playlist.description}
-                trackCount={playlist.tracks.length}
-                coverImage={playlist.coverImage}
+                description={playlist.description || undefined}
+                trackCount={0} // We would need to fetch this from the tracks table
+                coverImage={playlist.cover_image || undefined}
                 onPlay={handlePlay}
                 onEdit={handleEdit}
                 onAddTrack={handleAddTrack}

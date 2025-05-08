@@ -6,13 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/layout/Navbar";
 import { toast } from "sonner";
 import { Music, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // If user is already authenticated, redirect to dashboard
+  if (user) {
+    navigate("/dashboard");
+    return null;
+  }
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +33,22 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, this would call an API to authenticate the user
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const { error } = await signIn(email, password);
       
-      toast.success("Login realizado com sucesso!");
-      navigate("/dashboard");
-    } catch (error) {
-      toast.error("E-mail ou senha incorretos");
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("E-mail ou senha incorretos");
+        } else if (error.message.includes("Email not confirmed")) {
+          toast.error("Por favor, confirme seu e-mail antes de fazer login");
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.success("Login realizado com sucesso!");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao fazer login");
     } finally {
       setIsLoading(false);
     }

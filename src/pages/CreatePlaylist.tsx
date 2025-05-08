@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { createPlaylist } from "@/lib/playlistService";
 
 const CreatePlaylist = () => {
   const navigate = useNavigate();
@@ -43,13 +44,16 @@ const CreatePlaylist = () => {
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would call an API to create the playlist
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const newPlaylist = await createPlaylist(title, description, coverFile || undefined);
       
-      toast.success("Playlist criada com sucesso!");
-      navigate("/dashboard");
-    } catch (error) {
-      toast.error("Erro ao criar playlist. Tente novamente.");
+      if (newPlaylist) {
+        toast.success("Playlist criada com sucesso!");
+        navigate("/dashboard");
+      } else {
+        throw new Error("Falha ao criar playlist");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao criar playlist. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }

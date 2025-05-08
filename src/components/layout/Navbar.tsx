@@ -1,11 +1,29 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Music, LogIn } from "lucide-react";
+import { 
+  PlusCircle, 
+  Music, 
+  LogIn, 
+  LogOut,
+  User
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Navbar() {
-  // Mock authentication state - would be replaced with actual auth state
-  const isAuthenticated = false;
+  const { user, signOut } = useAuth();
+  const isAuthenticated = !!user;
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full h-16 z-50 backdrop-blur-md bg-vibeMixer-dark/80 border-b border-white/5">
@@ -28,6 +46,30 @@ export function Navbar() {
               <Button asChild variant="outline" size="sm" className="border-vibeMixer-purple/50 text-white hover:bg-vibeMixer-purple/10">
                 <Link to="/create-playlist"><PlusCircle className="mr-2 h-4 w-4" /> Nova Playlist</Link>
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
+                    <Avatar>
+                      <AvatarFallback className="bg-vibeMixer-purple/20 text-white">
+                        {user.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-vibeMixer-dark-card border-white/10 text-white">
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-vibeMixer-purple/20">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{user.email}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleSignOut}
+                    className="text-white/70 focus:text-white focus:bg-vibeMixer-purple/20"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button asChild variant="outline" size="sm" className="border-vibeMixer-purple/50 text-white hover:bg-vibeMixer-purple/10">

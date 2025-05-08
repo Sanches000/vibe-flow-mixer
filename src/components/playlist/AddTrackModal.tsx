@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Youtube, Music } from "lucide-react";
 import { toast } from "sonner";
+import { addTrackToPlaylist } from "@/lib/playlistService";
 
 interface AddTrackModalProps {
   open: boolean;
@@ -25,6 +26,11 @@ export function AddTrackModal({ open, onOpenChange, onAddTrack, playlistId }: Ad
       return;
     }
     
+    if (!playlistId) {
+      toast.error("Playlist não selecionada");
+      return;
+    }
+    
     // Check if link is valid Youtube or Spotify URL
     const isYoutube = link.includes("youtube.com") || link.includes("youtu.be");
     const isSpotify = link.includes("spotify.com") || link.includes("open.spotify.com");
@@ -37,13 +43,38 @@ export function AddTrackModal({ open, onOpenChange, onAddTrack, playlistId }: Ad
     setIsLoading(true);
     
     try {
-      // In a real app, this would call an API to add the track
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Extract basic info from link (a real app would use the YouTube/Spotify APIs)
+      let title = "New Track";
+      let artist = null;
+      let source: "youtube" | "spotify" = "youtube";
       
-      onAddTrack && onAddTrack(link);
-      toast.success("Faixa adicionada com sucesso!");
-      setLink("");
-      onOpenChange(false);
+      if (isYoutube) {
+        source = "youtube";
+        title = "YouTube Track";
+      } else {
+        source = "spotify";
+        title = "Spotify Track";
+        artist = "Unknown Artist";
+      }
+      
+      const result = await addTrackToPlaylist(
+        playlistId,
+        title,
+        artist,
+        link,
+        source
+      );
+      
+      if (result) {
+        toast.success("Faixa adicionada com sucesso!");
+        setLink("");
+        onOpenChange(false);
+        
+        // Call the onAddTrack callback if provided
+        onAddTrack && onAddTrack(link);
+      } else {
+        throw new Error("Falha ao adicionar faixa");
+      }
     } catch (error) {
       toast.error("Erro ao adicionar faixa. Tente novamente.");
     } finally {
