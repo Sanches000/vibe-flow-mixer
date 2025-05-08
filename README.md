@@ -1,6 +1,6 @@
 ## Project info
 
-**URL**: https://lovable.dev/projects/5d334220-54d8-4e53-8170-55f165fcc921
+**URL**: https://preview--vibe-flow-mixer.lovable.app
 
 ## What technologies are used for this project?
 
