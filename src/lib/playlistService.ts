@@ -50,23 +50,18 @@ export async function getPlaylist(id: string) {
 
 export async function createPlaylist(title: string, description?: string, coverFile?: File) {
   try {
-    const user = supabase.auth.getUser();
-    if (!user) {
+    // Get current user
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) {
       toast.error("Você precisa estar logado para criar uma playlist");
       return null;
     }
 
+    const user_id = userData.user.id;
     let coverImageURL = null;
 
     // Upload cover image if provided
     if (coverFile) {
-      const { data: userData } = await supabase.auth.getUser();
-      const user_id = userData.user?.id;
-      
-      if (!user_id) {
-        throw new Error("User ID not found");
-      }
-
       const fileExt = coverFile.name.split(".").pop();
       const fileName = `${user_id}/${Date.now()}.${fileExt}`;
 
@@ -88,13 +83,12 @@ export async function createPlaylist(title: string, description?: string, coverF
     // Create playlist
     const { data, error } = await supabase
       .from("playlists")
-      .insert([
-        {
-          title,
-          description: description || null,
-          cover_image: coverImageURL,
-        },
-      ])
+      .insert({
+        title,
+        description: description || null,
+        cover_image: coverImageURL,
+        user_id
+      })
       .select()
       .single();
 
@@ -204,6 +198,15 @@ export async function addTrackToPlaylist(
   url: string,
   source: "youtube" | "spotify"
 ) {
+  // Get current user
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) {
+    toast.error("Você precisa estar logado para adicionar faixas");
+    return null;
+  }
+
+  const user_id = userData.user.id;
+
   // Get the current highest position
   const { data: tracks } = await supabase
     .from("tracks")
@@ -217,16 +220,15 @@ export async function addTrackToPlaylist(
   // Add the new track
   const { data, error } = await supabase
     .from("tracks")
-    .insert([
-      {
-        playlist_id: playlistId,
-        title,
-        artist,
-        url,
-        source,
-        position,
-      },
-    ])
+    .insert({
+      playlist_id: playlistId,
+      title,
+      artist,
+      url,
+      source,
+      position,
+      user_id
+    })
     .select()
     .single();
 
